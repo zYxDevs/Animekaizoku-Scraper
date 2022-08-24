@@ -28,15 +28,17 @@ def RecaptchaV3(ANCHOR_URL):
         'content-type': 'application/x-www-form-urlencoded'
     })
     matches = re.findall('([api2|enterprise]+)\/anchor\?(.*)', ANCHOR_URL)[0]
-    url_base += matches[0]+'/'
+    url_base += f'{matches[0]}/'
     params = matches[1]
-    res = client.get(url_base+'anchor', params=params)
+    res = client.get(f'{url_base}anchor', params=params)
     token = re.findall(r'"recaptcha-token" value="(.*?)"', res.text)[0]
     params = dict(pair.split('=') for pair in params.split('&'))
     post_data = post_data.format(params["v"], token, params["k"], params["co"])
-    res = client.post(url_base+'reload', params=f'k={params["k"]}', data=post_data)
-    answer = re.findall(r'"rresp","(.*?)"', res.text)[0]    
-    return answer
+    res = client.post(
+        f'{url_base}reload', params=f'k={params["k"]}', data=post_data
+    )
+
+    return re.findall(r'"rresp","(.*?)"', res.text)[0]
 
 
 def ouo_bypass(url):
@@ -118,18 +120,17 @@ def looper(dict_key, click):
                
                                                                                                                                 
 def tab_distribute(downloadbutton,  link_types):
-	print(f"scraping {link_types} Links.....")
-	
-	with concurrent.futures.ThreadPoolExecutor() as executor:
-	    for button in downloadbutton:
-	    	if button.text == "Patches": pass
-	    	else:
-	    		dict_key = button.text.strip()
-	    		data_dict[dict_key] = []
-	    		executor.submit(looper, dict_key, str(button))
+    print(f"scraping {link_types} Links.....")
 
-	main_dict[link_types] = copy.deepcopy(data_dict)
-	data_dict.clear()   
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for button in downloadbutton:
+            if button.text != "Patches":
+                dict_key = button.text.strip()
+                data_dict[dict_key] = []
+                executor.submit(looper, dict_key, str(button))
+
+    main_dict[link_types] = copy.deepcopy(data_dict)
+    data_dict.clear()   
 	
 
 			
